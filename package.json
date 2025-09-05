@@ -1,0 +1,21 @@
+{
+  "name": "mero-share-ipo",
+  "version": "1.0.3",
+  "description": "Apply for MeroShare IPO programmatically",
+  "main": "src/applyIPO.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "meroshare",
+    "ipo",
+    "shares",
+    "automation"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "mero-share-ipo": "^1.0.3"
+  }
+}
