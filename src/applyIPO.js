@@ -1,23 +1,27 @@
 const fetchClientId = async (brokerCode) => {
   console.log(`➡️ Fetching clientId for broker code: ${brokerCode}`);
-  const res = await fetch("https://webbackend.cdsc.com.np/api/meroShare/capital/", {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Origin: "https://meroshare.cdsc.com.np",
-      Referer: "https://meroshare.cdsc.com.np/",
-    },
-  });
+  const res = await fetch(
+    "https://webbackend.cdsc.com.np/api/meroShare/capital/",
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Origin: "https://meroshare.cdsc.com.np",
+        Referer: "https://meroshare.cdsc.com.np/",
+      },
+    }
+  );
 
-  if (!res.ok) throw new Error(`Failed to fetch clientId (status: ${res.status})`);
+  if (!res.ok)
+    throw new Error(`Failed to fetch clientId (status: ${res.status})`);
 
   const data = await res.json();
   const client = data.find((c) => c.code === brokerCode);
 
-  if (!client) throw new Error(`Broker with code "${brokerCode}" not found in /capital/`);
+  if (!client)
+    throw new Error(`Broker with code "${brokerCode}" not found in /capital/`);
   return client.id; // This is the DP_ID (clientId)
 };
-
 
 async function applyIPO(config) {
   const {
@@ -49,6 +53,8 @@ async function applyIPO(config) {
     if (!loginRes.ok)
       throw new Error(`❌ Login failed with status ${loginRes.status}`);
     const loginData = await loginRes.json();
+    if (loginData.statusCode !== 200)
+      throw new Error(`❌ Login failed: ${loginData.message}`);
     console.log(`✅ Login successful for user: ${username}`);
 
     const token = loginRes.headers.get("authorization");
@@ -103,7 +109,7 @@ async function applyIPO(config) {
         `❌ Failed to fetch BO details (status: ${boRes.status})`
       );
     const boData = await boRes.json();
-    const { bankCode, accountNumber: bankAccountNumber, boid: demat } = boData;
+    const { bankCode, boid: demat } = boData;
     console.log(`✅ BO details fetched for BOID: ${boid}`);
 
     console.log(`➡️ Fetching bank info for bankCode: ${bankCode}`);
@@ -124,12 +130,16 @@ async function applyIPO(config) {
         `❌ Failed to fetch bank account info (status: ${bankRes.status})`
       );
     const bankAccount = (await bankRes.json())[0];
-    const { id: customerId, accountBranchId } = bankAccount;
+    const {
+      id: customerId,
+      accountBranchId,
+      accountNumber: registeredAccountNumber,
+    } = bankAccount;
     console.log(`✅ Bank account info fetched for customerId: ${customerId}`);
 
     const payload = {
       accountBranchId,
-      accountNumber: bankAccountNumber,
+      accountNumber: registeredAccountNumber,
       accountTypeId: 1,
       appliedKitta: appliedKitta || "10",
       bankId: bankId.toString(),
@@ -141,17 +151,17 @@ async function applyIPO(config) {
       transactionPIN: pin,
     };
 
-    console.log(`➡️ Applying IPO for ${targetScript}...`);
     const applyRes = await fetch(`${BASE_URL}/applicantForm/share/apply`, {
       method: "POST",
       headers,
       body: JSON.stringify(payload),
     });
 
-    if (!applyRes.ok)
+    if (!applyRes.ok) {
       throw new Error(
         `❌ IPO application failed for ${targetScript} (status: ${applyRes.status})`
       );
+    }
 
     const applyData = await applyRes.json();
     console.log(
