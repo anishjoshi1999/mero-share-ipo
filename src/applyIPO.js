@@ -50,8 +50,10 @@ async function applyIPO(config) {
       body: JSON.stringify({ username, password, clientId }),
     });
 
-    if (!loginRes.ok)
+    if (!loginRes.ok) {
       throw new Error(`❌ Login failed with status ${loginRes.status}`);
+    }
+
     const loginData = await loginRes.json();
     if (loginData.statusCode !== 200)
       throw new Error(`❌ Login failed: ${loginData.message}`);
@@ -158,8 +160,9 @@ async function applyIPO(config) {
     });
 
     if (!applyRes.ok) {
+      let error = await applyRes.json();
       throw new Error(
-        `❌ IPO application failed for ${targetScript} (status: ${applyRes.status})`
+        `❌ IPO application failed for ${targetScript} (message: ${error.message})`
       );
     }
 
