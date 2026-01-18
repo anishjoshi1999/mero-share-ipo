@@ -1,5 +1,6 @@
 const BASE_URL = "https://webbackend.cdsc.com.np/api/meroShare";
 const BO_URL = "https://webbackend.cdsc.com.np/api/meroShareView";
+const OWN_DETAIL_URL = "https://webbackend.cdsc.com.np/api/meroShare/ownDetail";
 
 async function fetchClientId(brokerCode) {
   const res = await fetch(`${BASE_URL}/capital/`, {
@@ -19,7 +20,7 @@ async function fetchClientId(brokerCode) {
   const client = data.find((c) => c.code === brokerCode);
   if (!client) {
     throw new Error(
-      `❌ Broker with code "${brokerCode}" not found in /capital/`
+      `❌ Broker with code "${brokerCode}" not found in /capital/`,
     );
   }
   return client.id;
@@ -119,7 +120,7 @@ class MeroShareClient {
             { key: "maxIssueCloseDate", value: "" },
           ],
         }),
-      }
+      },
     );
 
     if (!res.ok) {
@@ -145,7 +146,7 @@ class MeroShareClient {
   }) {
     const ipoList = await this.fetchIPOs();
     const share = ipoList.find(
-      (i) => i.scrip.toUpperCase() === targetScript.toUpperCase()
+      (i) => i.scrip.toUpperCase() === targetScript.toUpperCase(),
     );
     if (!share) throw new Error(`❌ Target IPO "${targetScript}" not found!`);
     console.log(`✅ Target IPO found: ${share.companyName} (${share.scrip})`);
@@ -158,11 +159,11 @@ class MeroShareClient {
 
     // Bank request info
     const bankReqRes = await this.authFetch(
-      `${BASE_URL.replace("/meroShare", "")}/bankRequest/${bankCode}`
+      `${BASE_URL.replace("/meroShare", "")}/bankRequest/${bankCode}`,
     );
     if (!bankReqRes.ok)
       throw new Error(
-        `❌ Failed to fetch bank request (status: ${bankReqRes.status})`
+        `❌ Failed to fetch bank request (status: ${bankReqRes.status})`,
       );
     const bankReqData = await bankReqRes.json();
     const bankId = bankReqData.bank.id;
@@ -171,7 +172,7 @@ class MeroShareClient {
     const bankRes = await this.authFetch(`${BASE_URL}/bank/${bankId}`);
     if (!bankRes.ok)
       throw new Error(
-        `❌ Failed to fetch bank account (status: ${bankRes.status})`
+        `❌ Failed to fetch bank account (status: ${bankRes.status})`,
       );
     const bankAccount = (await bankRes.json())[0];
     const {
@@ -203,13 +204,13 @@ class MeroShareClient {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      }
+      },
     );
 
     if (!applyRes.ok) {
       const error = await applyRes.json();
       throw new Error(
-        `❌ IPO application failed for ${targetScript} (message: ${error.message})`
+        `❌ IPO application failed for ${targetScript} (message: ${error.message})`,
       );
     }
 
@@ -217,7 +218,7 @@ class MeroShareClient {
     console.log(
       `✅ IPO application successful for ${targetScript}. Transaction reference: ${
         applyData.referenceNo || "N/A"
-      }`
+      }`,
     );
     return applyData;
   }
@@ -241,12 +242,12 @@ class MeroShareClient {
           size: 200,
           searchRoleViewConstants: "VIEW_APPLICANT_FORM_COMPLETE",
         }),
-      }
+      },
     );
 
     if (!res.ok)
       throw new Error(
-        `❌ Failed to fetch application reports (status: ${res.status})`
+        `❌ Failed to fetch application reports (status: ${res.status})`,
       );
     const data = await res.json();
     return data.object || [];
@@ -256,12 +257,12 @@ class MeroShareClient {
       `${BASE_URL}/applicantForm/report/detail/${applicantFormId}`,
       {
         method: "GET",
-      }
+      },
     );
 
     if (!res.ok) {
       throw new Error(
-        `❌ Failed to fetch application detail for applicantFormId ${applicantFormId} (status: ${res.status})`
+        `❌ Failed to fetch application detail for applicantFormId ${applicantFormId} (status: ${res.status})`,
       );
     }
 
